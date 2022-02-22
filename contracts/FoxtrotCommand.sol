@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "contracts/utils/Security.sol";
+import "contracts/utils/FoundationVAT.sol";
+import "contracts/utils/Antibot.sol";
 import "hardhat/console.sol";
 /**
     @title FXD Token (Foxtrot Command)
@@ -16,6 +18,8 @@ import "hardhat/console.sol";
 contract FoxtrotCommand is
     ERC20Burnable,
     Pausable,
+    FoundationVAT,
+    Antibot,
     Security
 {
     using Address for address;
@@ -33,6 +37,8 @@ contract FoxtrotCommand is
      */
 
     uint256 public totalMintedTokens;
+
+    mapping(address => bool) internal _liquidityPairs;
 
     /**
      * Business Logic tokenomics allowed names, address and amount
@@ -292,7 +298,20 @@ contract FoxtrotCommand is
 		address recipient,
 		uint256 amount
 	) internal override {
-        require(Security.isSecured[msg.sender], "FXD: Cant purchase");
+        require(Security.isSecured[msg.sender], "FXD: Cant purchase");        
+        address addressToCooldown = _liquidityPairs[sender] ? recipient : sender;
+        require(Antibot.isAvailableToTransact(addressToCooldown), "FXD: Wait your cooldown");
+
+        if(_liquidityPairs[sender] == true || _liquidityPairs[recipient] == true) {
+            uint256 taxCalculation = FoundationVAT.getFoundationVatFeeAmount(amount);
+            amount -= taxCalculation; 
+            super._transfer(sender, FoundationVAT.foundationVatAddress , taxCalculation);
+        }
+        
+        if(Antibot.isAntibotEnabled) {
+            Antibot.timeTransactionTracker[addressToCooldown] = block.timestamp;
+        }
+
         super._transfer(sender, recipient, amount);
     }
 
