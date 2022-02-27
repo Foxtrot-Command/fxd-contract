@@ -31,51 +31,75 @@ describe("Foxtrot Command (FXD)", function () {
   }
 
   let foxtrotToken,
-    busdToken,
     masterAccount,
     userAccount,
-    companyVault,
+    foundationVault,
     liquidityMock,
     addrs;
 
   before(async () => {
 
-    [masterAccount, userAccount, companyVault, liquidityMock, ...addrs] = await ethers.getSigners();
+    [masterAccount, userAccount, foundationVault, liquidityMock, ...addrs] = await ethers.getSigners();
 
     const BusdToken = await ethers.getContractFactory("MockBUSD");
     const FoxtrotCommandToken = await ethers.getContractFactory("FoxtrotCommand");
 
-    foxtrotToken = await FoxtrotCommandToken.deploy(215000000, [
-      "Seed",
-      "Private",
-      "Public",
-      "Ecosystem",
-      "Partners",
-      "Team",
-      "Staking",
-      "Play",
-      "Marketing"
-    ], [
-      parseEther(32250000),
-      parseEther(31605000),
-      parseEther(4945000),
-      parseEther(19350000),
-      parseEther(19350000),
-      parseEther(32250000),
-      parseEther(43000000),
-      parseEther(251100000),
-      parseEther(6450000)
-    ]);
+    foxtrotToken = await FoxtrotCommandToken.deploy(215000000);
     busdToken = await BusdToken.deploy();
 
   });
 
-  describe("#Initialize sale", async () => {
+  describe("#Contract initialization", async () => {
 
     it("Foxtrot command contract should have max supply", async () => {
       var balance = await foxtrotToken.balanceOf(foxtrotToken.address);
       expect(balance).to.equal(parseEther(215000000));
     });
+
+    describe("#~Foundation Fee", async() => {
+      it("Should change the Foundation Address", async() => {
+        await foxtrotToken.connect(masterAccount).setFoundationAddress(foundationVault.address);
+        expect(await foxtrotToken.foundationAddress()).to.be.equal(foundationVault.address);
+      })
+    })
+
+    describe("#~Test supply transfer", async() => {
+
+      it("Deployer account should be have 50M supply", async() => {
+          await foxtrotToken.connect(masterAccount).withdraw(foxtrotToken.address, masterAccount.address, parseEther(5000000));
+          var balance = await foxtrotToken.balanceOf(masterAccount.address);
+          expect(balance).to.equal(parseEther(5000000));
+      })
+
+      it("Should set Liquidity Mock Pair Address", async() => {
+          await foxtrotToken.connect(masterAccount).updateLiquidityPairs(liquidityMock.address, "true");
+          expect(await foxtrotToken.getStatusOfLiquidityPair(liquidityMock.address)).to.be.true;
+      })
+
+    })
+
+    /* it("Should allow to transact", async() => {
+      await foxtrotToken.connect(masterAccount).approveSecureTransaction();
+      let isAvailableToTransact = await foxtrotToken.connect(masterAccount).checkAddressApproved();
+      expect(isAvailableToTransact).to.be.true;
+    }); */
+
+  });
+  
+
+  describe("#~Transactions", async () => {
+    
+    it("Should transfer to another account without fees", async() => {
+      await foxtrotToken.connect(masterAccount).transfer(userAccount.address, parseEther(5));
+      //console.log(await foxtrotToken.balanceOf(userAccount.address))
+    });
+
+    it("Should transfer to another account with fees", async() => {
+      await foxtrotToken.connect(userAccount).transfer(liquidityMock.address, parseEther(3));
+      let balance = await foxtrotToken.balanceOf(foundationVault.address);
+      expect(balance).to.equal(parseEther(0.03));
+    });
+
 
   });
 

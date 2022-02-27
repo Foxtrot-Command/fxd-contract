@@ -35,6 +35,7 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      initialBaseFeePerGas: 0
     },
     bsc: {
       accounts: process.env.BSC_KEY !== undefined ? [process.env.BSC_KEY] : [],
