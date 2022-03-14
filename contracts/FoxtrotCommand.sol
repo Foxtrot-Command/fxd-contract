@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "contracts/financial/Foundation.sol";
 import "contracts/financial/Antibot.sol";
-import "contracts/security/UniCaptcha.sol";
 import "hardhat/console.sol";
 
 /**
@@ -19,8 +18,7 @@ contract FoxtrotCommand is
     ERC20Burnable,
     Pausable,
     Foundation,
-    Antibot,
-    UniCaptcha
+    Antibot
 {
 
     mapping(address => bool) internal _liquidityPairs;

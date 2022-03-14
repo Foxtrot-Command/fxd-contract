@@ -103,4 +103,29 @@ describe("Foxtrot Command (FXD)", function () {
 
   });
 
+  describe("#~OAuth", async() => {
+
+    it("MasterAccount should be the owner", async() => {
+      let owner = await foxtrotToken.isOwner(masterAccount.address);
+      expect(owner).to.be.true;
+    });
+
+    it("Owner should be authorized by default", async() => {
+      let authorized = await foxtrotToken.isAuthorized(masterAccount.address);
+      expect(authorized).to.be.true;
+    });
+
+    it("User must try to execute the authorized function without suscesses", async() => {
+      let authorized_function = foxtrotToken.connect(userAccount).setAntibotStatus();
+      await expect(authorized_function).to.be.revertedWith('OAuth: you\'re not authorized');
+    });
+
+    it("Grant OAuth access to a userAccount", async() => {
+      await foxtrotToken.connect(masterAccount).authorize(userAccount.address);
+      let authorized = await foxtrotToken.isAuthorized(userAccount.address);
+      expect(authorized).to.be.true;
+    });
+
+  })
+
 });

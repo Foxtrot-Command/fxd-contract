@@ -23,18 +23,26 @@ abstract contract Antibot is OAuth {
      * @param addr Address that send the transaction
      */
     function _isAvailableToTransact(address addr) internal {
-        if(isAntibotEnabled && _cooldownTimer[addr] < block.timestamp) {
-            _cooldownTimer[addr] = block.timestamp + cooldownTimerInterval;
-        } else {
-            revert("FXDGuard: wait between two tx");
-        }
+        if(isAntibotEnabled) {
+            if(_cooldownTimer[addr] < block.timestamp) {
+                _cooldownTimer[addr] = block.timestamp + cooldownTimerInterval;
+            } else {
+                revert("FXDGuard: wait between two tx");
+            }
+        }         
     }
 
-
+    /**
+     * @notice
+     */
     function setAntibotStatus() external authorized() {
         isAntibotEnabled = !isAntibotEnabled;
     }
     
+    /**
+     * @notice This method allows to change the wait time of the antibot system
+     * @param newWaitTime the input should be in seconds
+     */
     function setAntibotWaitTime(uint256 newWaitTime) external authorized() {
         require(newWaitTime <= _maxPossibleCooldownInterval, "FXDGuard: limit time exceed");
         cooldownTimerInterval = newWaitTime;
