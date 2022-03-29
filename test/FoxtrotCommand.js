@@ -78,8 +78,8 @@ describe("Foxtrot Command (FXD)", function () {
       })
 
       it("Should set Liquidity Mock Pair Address", async () => {
-        await foxtrotToken.connect(masterAccount).updateLiquidityPairs(liquidityMock.address, "true");
-        expect(await foxtrotToken.getStatusOfLiquidityPair(liquidityMock.address)).to.be.true;
+        await foxtrotToken.connect(masterAccount).setLiquidityPair(liquidityMock.address, "true");
+        expect(await foxtrotToken.isLiquidityPair(liquidityMock.address)).to.be.true;
       })
 
     })
@@ -204,8 +204,6 @@ describe("Foxtrot Command (FXD)", function () {
       });
 
       it("Should not be able to transact two times at time", async () => {
-        console.log('Account2: %s | Liquidity: %s', userAccount2.address, liquidityMock.address);
-        await foxtrotToken.connect(userAccount2).transfer(liquidityMock.address, parseEther(3));
         await expect(foxtrotToken.connect(userAccount2).transfer(liquidityMock.address, parseEther(3)))
           .to.be.revertedWith('FXDGuard: wait between two tx');
 
