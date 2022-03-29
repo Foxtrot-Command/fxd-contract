@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-abstract contract OAuth {
+contract OAuth {
 
     address internal _owner;
     mapping (address => bool) internal _authorizations;
@@ -46,6 +46,13 @@ abstract contract OAuth {
      */
     function isOwner(address account) public view returns (bool) {
         return account == _owner;
+    }
+
+    /**
+     * @notice Return address' authorization status
+     */
+    function isAuthorized(address adr) public view returns (bool) {
+        return _authorizations[adr];
     }
 
     /**

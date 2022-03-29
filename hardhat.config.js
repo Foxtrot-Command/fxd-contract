@@ -36,6 +36,9 @@ module.exports = {
   networks: {
     hardhat: {
       initialBaseFeePerGas: 0
+      /* forking: {
+        url: "https://bsc-dataseed.binance.org"
+      } */
     },
     bsc: {
       accounts: process.env.BSC_KEY !== undefined ? [process.env.BSC_KEY] : [],

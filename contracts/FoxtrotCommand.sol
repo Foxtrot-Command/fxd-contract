@@ -3,12 +3,11 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "contracts/financial/Foundation.sol";
 import "contracts/financial/Antibot.sol";
-import "contracts/security/UniCaptcha.sol";
 import "hardhat/console.sol";
-
 /**
     @title FXD Token (Foxtrot Command)
     @author Michael Araque
@@ -17,47 +16,63 @@ import "hardhat/console.sol";
 
 contract FoxtrotCommand is
     ERC20Burnable,
+    ERC20Snapshot,
     Pausable,
     Foundation,
-    Antibot,
-    UniCaptcha
+    Antibot 
 {
 
+    uint256 constant private _TOKEN_SUPPLY = 215e6;
     mapping(address => bool) internal _liquidityPairs;
 
-    constructor(
-        uint256 _supply) ERC20("Foxtrot Command", "FXD") {
-        uint256 supply = _supply * 10**18;
+    event WithdrawTokensFromMainContract(address from, address to, uint256 amount, string reason);
 
+    constructor() ERC20("Foxtrot Command", "FXD") {
+        uint256 supply = _TOKEN_SUPPLY * 10**18; // 215M
+
+        Antibot.isAntibotEnabled = true;
+        Foundation.isFoundationEnabled = true;
         _mint(address(this), supply);
     }
 
+    /**
+     * @notice This function is used to set a pair of addresses as a liquidity pair.
+     */
     function updateLiquidityPairs(address addr, bool status) external authorized() returns(bool) {
         _liquidityPairs[addr] = status;
         return true;
     }
 
+    /**
+     * @notice This function is used to check if a pair of addresses is a liquidity pair.
+     * @param addr Address of the liquidity pair to check status
+     */
     function getStatusOfLiquidityPair(address addr) external view returns(bool) {
         return _liquidityPairs[addr];
     }
 
     /**
-        @notice This method allow the role TREASURY_MANAGER to transfer specific amount 
-                of non FXD Tokens to a specific address manually (normally are garbage tokens)
+        @notice This methods allows secure transfer from contract to contract
         @param _token       Address of the token contract
         @param _receiver    Address of the wallet that will receive the tokens
         @param _amount      Amount of tokens to be transfered
+        @param _reason      Reason for why the authorized person are withdrawing that tokens
      */
-    function withdraw(
+    function secureTransfer(
         address _token,
         address _receiver,
-        uint256 _amount
-    ) public authorized() returns (bool) {
-        //require(_token != address(this), "FXD: You can't withdraw FXD");
+        uint256 _amount,
+        string memory _reason
+    ) public authorized returns (bool) {
         IERC20(_token).transfer(_receiver, _amount);
+        emit WithdrawTokensFromMainContract(msg.sender, _receiver, _amount, _reason);
         return true;
     }
 
+    /**
+     * @notice This method is overrided because is implement Anti-bot system and
+     *         Foundation tax system
+     */
     function _transfer(
 		address sender,
 		address recipient,
@@ -67,16 +82,17 @@ contract FoxtrotCommand is
         address addressToCooldown = Antibot._detectAddressToCooldown(_liquidityPairs[sender], sender, recipient);
         Antibot._isAvailableToTransact(addressToCooldown);
 
-        if(_liquidityPairs[sender] || _liquidityPairs[recipient]) {
-            uint256 taxCalculation = Foundation.getFoundationFeeAmount(amount);
-            amount -= taxCalculation; 
-            super._transfer(sender, Foundation.foundationAddress, taxCalculation);
+        if(!Foundation._isFoundationExempt[addressToCooldown]) {
+            if(Foundation.isFoundationEnabled && 
+                (_liquidityPairs[sender] || _liquidityPairs[recipient])) {
+                uint256 taxCalculation = Foundation.getFoundationFeeAmount(amount);
+                amount -= taxCalculation; 
+                super._transfer(sender, Foundation.foundationAddress, taxCalculation);
+            }
         }
 
         super._transfer(sender, recipient, amount);
     }
-
-    // The following functions are overrides required by Solidity.
 
     function pause() public authorized() {
         _pause();
@@ -86,11 +102,15 @@ contract FoxtrotCommand is
         _unpause();
     }
 
+    function snapshot() public authorized() {
+        _snapshot();
+    }
+
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 amount
-    ) internal override whenNotPaused {
+    ) internal override(ERC20, ERC20Snapshot) whenNotPaused {
         super._beforeTokenTransfer(from, to, amount);
     }
 
@@ -102,11 +122,4 @@ contract FoxtrotCommand is
         super._afterTokenTransfer(from, to, amount);
     }
 
-    function _mint(address to, uint256 amount) internal override(ERC20) {
-        super._mint(to, amount);
-    }
-
-    function _burn(address account, uint256 amount) internal override(ERC20) {
-        super._burn(account, amount);
-    }
 }
