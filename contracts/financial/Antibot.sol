@@ -2,7 +2,6 @@
 pragma solidity 0.8.4;
 
 import "contracts/security/OAuth.sol";
-import "hardhat/console.sol";
 
 abstract contract Antibot is OAuth {
 
@@ -33,7 +32,6 @@ abstract contract Antibot is OAuth {
         if(isAntibotEnabled) {
             
             if(!_isCooldownExempt[addr]) {
-                console.log("Address: %s", addr);
                 if(_cooldownTimer[addr] < block.timestamp) {
                     _cooldownTimer[addr] = block.timestamp + cooldownTimerInterval;
                 } else {
