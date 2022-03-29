@@ -24,20 +24,20 @@ abstract contract OAuth {
      * @notice Function modifier to require caller to be authorized
      */
     modifier authorized() {
-        require(isAuthorized(msg.sender), "OAuth: you're not authorized"); _;
+        require(_authorizations[msg.sender] == true, "OAuth: you're not authorized"); _;
     }
 
     /**
      * @notice Authorize address. Owner only
      */
-    function authorize(address adr) public onlyOwner {
+    function authorize(address adr) external onlyOwner {
         _authorizations[adr] = true;
     }
 
     /**
      * @notice Remove address' authorization. Owner only
      */
-    function unauthorize(address adr) public onlyOwner {
+    function unauthorize(address adr) external onlyOwner {
         _authorizations[adr] = false;
     }
 
@@ -49,17 +49,10 @@ abstract contract OAuth {
     }
 
     /**
-     * @notice Return address' authorization status
-     */
-    function isAuthorized(address adr) public view returns (bool) {
-        return _authorizations[adr];
-    }
-
-    /**
      * @notice Transfer ownership to new address. Caller must be owner. 
      *         Leaves old owner authorized
      */
-    function transferOwnership(address payable adr) public onlyOwner {
+    function transferOwnership(address payable adr) external onlyOwner {
         _owner = adr;
         _authorizations[adr] = true;
         emit OwnershipTransferred(adr);
