@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "contracts/financial/Foundation.sol";
 import "contracts/financial/Antibot.sol";
-import "hardhat/console.sol";
+
 /**
     @title FXD Token (Foxtrot Command)
     @author Michael Araque
@@ -37,8 +37,10 @@ contract FoxtrotCommand is
 
     /**
      * @notice This function is used to set a pair of addresses as a liquidity pair.
+     * @param addr Address to be parsed
+     * @param status true/false to be enabled or disabled
      */
-    function updateLiquidityPairs(address addr, bool status) external authorized() returns(bool) {
+    function setLiquidityPair(address addr, bool status) external authorized() returns(bool) {
         _liquidityPairs[addr] = status;
         return true;
     }
@@ -47,31 +49,34 @@ contract FoxtrotCommand is
      * @notice This function is used to check if a pair of addresses is a liquidity pair.
      * @param addr Address of the liquidity pair to check status
      */
-    function getStatusOfLiquidityPair(address addr) external view returns(bool) {
+    function isLiquidityPair(address addr) external view returns(bool) {
         return _liquidityPairs[addr];
     }
 
     /**
-        @notice This methods allows secure transfer from contract to contract
-        @param _token       Address of the token contract
-        @param _receiver    Address of the wallet that will receive the tokens
-        @param _amount      Amount of tokens to be transfered
-        @param _reason      Reason for why the authorized person are withdrawing that tokens
+        @notice This methods allows secure transfer from contract to address/contract
+        @param token       Address of the token contract
+        @param receiver    Address of the wallet that will receive the tokens
+        @param amount      Amount of tokens to be transfered
+        @param reason      Reason for withdrawal of tokens by the authorized person
      */
     function secureTransfer(
-        address _token,
-        address _receiver,
-        uint256 _amount,
-        string memory _reason
-    ) public authorized returns (bool) {
-        IERC20(_token).transfer(_receiver, _amount);
-        emit WithdrawTokensFromMainContract(msg.sender, _receiver, _amount, _reason);
+        address token,
+        address receiver,
+        uint256 amount,
+        string memory reason
+    ) public authorized() returns (bool) {
+        IERC20(token).transfer(receiver, amount);
+        emit WithdrawTokensFromMainContract(msg.sender, receiver, amount, reason);
         return true;
     }
 
     /**
-     * @notice This method is overrided because is implement Anti-bot system and
-     *         Foundation tax system
+     * @notice This method is overridden because it is to implement the Anti-bot system and 
+     *         the Foundation's system
+     * @param sender Address of the transfer request
+     * @param recipient Address of the transfer receiver
+     * @param amount Amount in wei to be transferred
      */
     function _transfer(
 		address sender,
