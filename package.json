@@ -2,11 +2,13 @@
   "scripts": {
     "testMigration": "npx hardhat run scripts/deploy.js --network localhost",
     "advanceTime": "npx hardhat run scripts/advanceTime.js --network localhost",
-    "claimStatus": "npx hardhat run --network localhost ./scripts/changeClaimStatus.js",
     "nodo": "npx hardhat node",
     "size": "npx hardhat size-contracts",
     "test:light": "npx hardhat test test/FoxtrotCommand.js",
-    "test": "npx hardhat coverage"
+    "test": "npx hardhat coverage",
+    "flatten": "npx hardhat flatten > output.sol",
+    "uml": "sol2uml ./contracts -i test -o ./FoxtrotCommand.png -f png"
+
   },
   "name": "hardhat-project",
   "devDependencies": {
