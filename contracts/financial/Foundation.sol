@@ -14,6 +14,7 @@ abstract contract Foundation is OAuth {
     uint256 public tax = 100;
     address public foundationAddress;
     bool public isFoundationEnabled;
+    uint256 internal _maxPossibleTaxRate = 200;
 
     mapping (address => bool) internal _isFoundationExempt;
 
@@ -21,7 +22,7 @@ abstract contract Foundation is OAuth {
     event UpdateFoundationAddres(address newAddress);
 
     /**
-     * @notice
+     * @notice This function is used to enable/disable the foundation fee
      */
     function setFoundationStatus() external authorized() {
         isFoundationEnabled = !isFoundationEnabled;
@@ -29,13 +30,15 @@ abstract contract Foundation is OAuth {
 
     /**
      * @dev Calculates the fee based on the input `amount` in basis
+     * @param amount Amount in basis point
 	 */
 	function getFoundationFeeAmount(uint256 amount) internal view returns (uint256) {
 		return (amount * tax) / 10000;
 	}
 
     /**
-	 * @dev Changes the game pool address `foundationAddress` to `newFoundationAddress`.
+	 * @dev Changes the foundation address `foundationAddress` to `newFoundationAddress`.
+     * @param newFoundationAddress Address of the new wallet that are going to handle the received tax
 	 */
 	function setFoundationAddress(address newFoundationAddress) external authorized {
         require(newFoundationAddress != foundationAddress, "FXD: Address is the same");
@@ -45,8 +48,10 @@ abstract contract Foundation is OAuth {
 
     /**
      * @dev The new tax value must be on basis point (100 = 1%)
+     * @param newTaxValue Percentage in basis point
      */
     function setFoundationFee(uint256 newTaxValue) external authorized {
+        require(newTaxValue <= _maxPossibleTaxRate, "FXD: tax amount exceed limit");
         require(tax != newTaxValue, "FXD: New tax is the same");
         tax = newTaxValue;
 

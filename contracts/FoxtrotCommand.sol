@@ -61,12 +61,13 @@ contract FoxtrotCommand is
         @param reason      Reason for withdrawal of tokens by the authorized person
      */
     function secureTransfer(
-        address token,
+        IERC20 token,
         address receiver,
         uint256 amount,
         string memory reason
     ) public authorized() returns (bool) {
-        IERC20(token).transfer(receiver, amount);
+        require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount");
+        token.transfer(receiver, amount);
         emit WithdrawTokensFromMainContract(msg.sender, receiver, amount, reason);
         return true;
     }
