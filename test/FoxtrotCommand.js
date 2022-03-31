@@ -1,35 +1,11 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const Minutes = (mins) => {
-  return mins * 60
-}
-
-const Seconds = (secs) => {
-  return secs;
-}
-
-const Hours = (hours) => {
-  return hours * 60 * 60
-}
-
-const Days = (days) => {
-  return days * 24 * 60 * 60;
-}
-
 const BigNumber = (value) => ethers.BigNumber.from(value);
 const parseEther = (value) => ethers.utils.parseEther(String(value));
 const formatEther = (value) => Number(ethers.utils.formatEther(String(value)));
-const DEAD = () => "0x000000000000000000000000000000000000dEaD";
-const ZERO = () => "0x0000000000000000000000000000000000000000";
-
 
 describe("Foxtrot Command (FXD)", function () {
-
-  const AdvanceTime = async (time) => {
-    await ethers.provider.send('evm_increaseTime', [time]);
-    await ethers.provider.send('evm_mine');
-  }
 
   let foxtrotToken,
     masterAccount,
@@ -58,11 +34,33 @@ describe("Foxtrot Command (FXD)", function () {
       expect(balance).to.equal(parseEther(215000000));
     });
 
-    describe("#~Foundation Fee", async () => {
+    describe("#~Foundation", async () => {
+
       it("Should change the Foundation Address", async () => {
         await foxtrotToken.connect(masterAccount).setFoundationAddress(foundationVault.address);
         expect(await foxtrotToken.foundationAddress()).to.be.equal(foundationVault.address);
       })
+      
+      it("Should not be able to apply more than 2% tax", async() => {
+        await expect(foxtrotToken.connect(masterAccount).setFoundationFee(201)).to.be.revertedWith('FXD: tax amount exceed limit');
+      });
+
+      it("Unauthorized account cannot modify the foundation fee", async() => {
+        await expect(foxtrotToken.connect(userAccount).setFoundationFee(201)).to.be.revertedWith('OAuth: you\'re not authorized');
+      });
+
+      it("Should be able to change the fee from 1% to 1.5%", async() => {
+        await foxtrotToken.connect(masterAccount).setFoundationFee(150);
+        expect(await foxtrotToken.tax()).to.be.equal(150);
+      });
+
+      describe("#Revert fee", async() => {
+        it("Revert fee to the default value", async() => {
+          await foxtrotToken.connect(masterAccount).setFoundationFee(100);
+          expect(await foxtrotToken.tax()).to.be.equal(100);
+        });
+      })
+      
     })
 
     describe("#~Test supply transfer", async () => {
@@ -96,10 +94,10 @@ describe("Foxtrot Command (FXD)", function () {
       expect(balance).to.be.equal(parseEther(amount));
     });
 
-    /*  it("Should 'Liquidity' be exempt of foundation tax", async () => {
+     it("Should 'Liquidity' be exempt of foundation tax", async () => {
        await foxtrotToken.connect(masterAccount).setFoundationExempt(liquidityMock.address, true);
        expect(await foxtrotToken.isExemptFromFoundation(liquidityMock.address)).to.be.true;
-     }); */
+     });
 
     it("Should 'Liquidity' be exempt of antibot transaction time", async () => {
       await foxtrotToken.connect(masterAccount).setCooldownExempt(liquidityMock.address, true);
@@ -209,7 +207,6 @@ describe("Foxtrot Command (FXD)", function () {
 
       });
     })
-
   })
 
 });
