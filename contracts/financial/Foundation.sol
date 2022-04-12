@@ -14,7 +14,7 @@ abstract contract Foundation is OAuth {
     uint256 public tax = 100;
     address public foundationAddress;
     bool public isFoundationEnabled;
-    uint256 internal _maxPossibleTaxRate = 200;
+    uint256 constant internal _MAX_TAX_RATE = 200;
 
     mapping (address => bool) internal _isFoundationExempt;
 
@@ -40,7 +40,7 @@ abstract contract Foundation is OAuth {
 	 * @dev Changes the foundation address `foundationAddress` to `newFoundationAddress`.
      * @param newFoundationAddress Address of the new wallet that are going to handle the received tax
 	 */
-	function setFoundationAddress(address newFoundationAddress) external authorized {
+	function setFoundationAddress(address newFoundationAddress) external authorized() {
         require(newFoundationAddress != foundationAddress, "FXD: Address is the same");
 		foundationAddress = newFoundationAddress;
         emit UpdateFoundationAddres(foundationAddress);
@@ -50,8 +50,8 @@ abstract contract Foundation is OAuth {
      * @dev The new tax value must be on basis point (100 = 1%)
      * @param newTaxValue Percentage in basis point
      */
-    function setFoundationFee(uint256 newTaxValue) external authorized {
-        require(newTaxValue <= _maxPossibleTaxRate, "FXD: tax amount exceed limit");
+    function setFoundationFee(uint256 newTaxValue) external authorized() {
+        require(newTaxValue <= _MAX_TAX_RATE, "FXD: tax amount exceed limit");
         require(tax != newTaxValue, "FXD: New tax is the same");
         tax = newTaxValue;
 
@@ -62,7 +62,7 @@ abstract contract Foundation is OAuth {
      * @notice This function is used to check if the address is exempt from foundation
      * @param addr Address of the wallet to be checked
      */
-    function isExemptFromFoundation(address addr) public view returns(bool) {
+    function isExemptFromFoundation(address addr) external view returns(bool) {
         return _isFoundationExempt[addr];
     }
 
@@ -71,7 +71,7 @@ abstract contract Foundation is OAuth {
      * @param addr Address of wallted to update
      * @param state Set true/false
      */
-    function setFoundationExempt(address addr, bool state) public authorized() {
+    function setFoundationExempt(address addr, bool state) external authorized() {
         _isFoundationExempt[addr] = state;
     }
 

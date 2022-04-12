@@ -7,7 +7,7 @@ abstract contract Antibot is OAuth {
 
     bool public isAntibotEnabled;
     uint256 public cooldownTimerInterval = 60;
-    uint256 internal _maxPossibleCooldownInterval = 120;
+    uint256 constant internal _MAX_COOLDOWN_INTERVAL = 120;
 
     mapping (address => uint) internal _cooldownTimer;
     mapping (address => bool) internal _isCooldownExempt;
@@ -53,7 +53,7 @@ abstract contract Antibot is OAuth {
      * @param newWaitTime the input should be in seconds
      */
     function setAntibotWaitTime(uint256 newWaitTime) external authorized() {
-        require(newWaitTime <= _maxPossibleCooldownInterval, "FXDGuard: limit time exceed");
+        require(newWaitTime <= _MAX_COOLDOWN_INTERVAL, "FXDGuard: limit time exceed");
         cooldownTimerInterval = newWaitTime;
     }
 
@@ -61,7 +61,7 @@ abstract contract Antibot is OAuth {
      * @notice This function is used to check if the address is exempt from cooldown
      * @param addr Address of the wallet to be checked
      */
-    function isExemptFromCooldown(address addr) public view returns(bool) {
+    function isExemptFromCooldown(address addr) external view returns(bool) {
         return _isCooldownExempt[addr];
     }
 
@@ -70,7 +70,7 @@ abstract contract Antibot is OAuth {
      * @param addr Address of wallted to update
      * @param state Set true/false
      */
-    function setCooldownExempt(address addr, bool state) public authorized() {
+    function setCooldownExempt(address addr, bool state) external authorized() {
         _isCooldownExempt[addr] = state;
     }
 }

@@ -7,6 +7,7 @@ contract OAuth {
     mapping (address => bool) internal _authorizations;
 
     event OwnershipTransferred(address owner);
+    event Authorize(address addr, bool isAuthorized);
 
     constructor() {
         _owner = msg.sender;
@@ -32,6 +33,7 @@ contract OAuth {
      */
     function authorize(address adr) external onlyOwner {
         _authorizations[adr] = true;
+        emit Authorize(adr, true);
     }
 
     /**
@@ -39,6 +41,7 @@ contract OAuth {
      */
     function unauthorize(address adr) external onlyOwner {
         _authorizations[adr] = false;
+        emit Authorize(adr, false);
     }
 
     /**
@@ -51,7 +54,7 @@ contract OAuth {
     /**
      * @notice Return address' authorization status
      */
-    function isAuthorized(address adr) public view returns (bool) {
+    function isAuthorized(address adr) external view returns (bool) {
         return _authorizations[adr];
     }
 
