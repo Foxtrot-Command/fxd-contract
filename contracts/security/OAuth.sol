@@ -23,6 +23,13 @@ contract OAuth is AccessControl {
     }
 
     /**
+     * @notice Method to allow authorized role to grand role to an address
+     */
+    function setRoleTo(bytes32 _role, address _to) external authorized() {
+        _grantRole(_role, _to);
+    }
+
+    /**
      * @notice Check if address is owner
      * @param account Address to check ownership
      */
