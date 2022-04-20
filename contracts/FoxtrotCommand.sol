@@ -27,38 +27,38 @@ contract FoxtrotCommand is
 
     event WithdrawTokensFromMainContract(address from, address to, uint256 amount, string reason);
 
-    constructor() ERC20("Foxtrot Command", "FXD") {
+    constructor(address multisigAddress) ERC20("Foxtrot Command", "FXD") OAuth(multisigAddress) {
         uint256 supply = _TOKEN_SUPPLY * 10**18; // 215M
 
         Antibot.isAntibotEnabled = true;
         Foundation.isFoundationEnabled = true;
-        _mint(address(this), supply);
+        _mint(multisigAddress, supply);
     }
 
     /**
      * @notice This function is used to set a pair of addresses as a liquidity pair.
-     * @param addr Address to be parsed
+     * @param account Address to be parsed
      * @param status true/false to be enabled or disabled
      */
-    function setLiquidityPair(address addr, bool status) external authorized() returns(bool) {
-        _liquidityPairs[addr] = status;
+    function setLiquidityPair(address account, bool status) external authorized() returns(bool) {
+        _liquidityPairs[account] = status;
         return true;
     }
 
     /**
      * @notice This function is used to check if a pair of addresses is a liquidity pair.
-     * @param addr Address of the liquidity pair to check status
+     * @param account Address of the liquidity pair to check status
      */
-    function isLiquidityPair(address addr) external view returns(bool) {
-        return _liquidityPairs[addr];
+    function isLiquidityPair(address account) external view returns(bool) {
+        return _liquidityPairs[account];
     }
 
     /**
-        @notice This methods allows secure transfer from contract to address/contract
-        @param token       Address of the token contract
-        @param receiver    Address of the wallet that will receive the tokens
-        @param amount      Amount of tokens to be transfered
-        @param reason      Reason for withdrawal of tokens by the authorized person
+     * @notice This methods allows secure transfer from contract to address/contract
+     * @param token       Address of the token contract
+     * @param receiver    Address of the wallet that will receive the tokens
+     * @param amount      Amount of tokens to be transfered
+     * @param reason      Reason for withdrawal of tokens by the authorized person
      */
     function secureTransfer(
         IERC20 token,
@@ -66,6 +66,7 @@ contract FoxtrotCommand is
         uint256 amount,
         string memory reason
     ) public authorized() returns (bool) {
+        require(token != IERC20(address(this)), "FXD: Cannot withdraw FXD Tokens");
         require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount");
         token.transfer(receiver, amount);
         emit WithdrawTokensFromMainContract(msg.sender, receiver, amount, reason);

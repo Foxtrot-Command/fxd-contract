@@ -11,7 +11,7 @@ import "contracts/security/OAuth.sol";
  
 abstract contract Foundation is OAuth {
 
-    uint256 public tax = 100;
+    uint256 public foundationTax = 100;
     address public foundationAddress;
     bool public isFoundationEnabled;
     uint256 constant internal _MAX_TAX_RATE = 200;
@@ -33,7 +33,7 @@ abstract contract Foundation is OAuth {
      * @param amount Amount in basis point
 	 */
 	function getFoundationFeeAmount(uint256 amount) internal view returns (uint256) {
-		return (amount * tax) / 10000;
+		return (amount * foundationTax) / 10000;
 	}
 
     /**
@@ -52,8 +52,8 @@ abstract contract Foundation is OAuth {
      */
     function setFoundationFee(uint256 newTaxValue) external authorized() {
         require(newTaxValue <= _MAX_TAX_RATE, "FXD: tax amount exceed limit");
-        require(tax != newTaxValue, "FXD: New tax is the same");
-        tax = newTaxValue;
+        require(foundationTax != newTaxValue, "FXD: New tax is the same");
+        foundationTax = newTaxValue;
 
         emit UpdateFoundationTax(newTaxValue);
     }

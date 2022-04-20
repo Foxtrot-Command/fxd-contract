@@ -1,70 +1,41 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
-contract OAuth {
+import "@openzeppelin/contracts/access/AccessControl.sol";
+
+contract OAuth is AccessControl {
 
     address internal _owner;
     mapping (address => bool) internal _authorizations;
 
-    event OwnershipTransferred(address owner);
-    event Authorize(address addr, bool isAuthorized);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-    constructor() {
-        _owner = msg.sender;
-        _authorizations[_owner] = true;
+    constructor(address multisigAddress) {
+         _grantRole(DEFAULT_ADMIN_ROLE, multisigAddress);
     }
 
     /**
-     * @notice Function modifier to require caller to be contract owner
-     */
-    modifier onlyOwner() {
-        require(isOwner(msg.sender), "OAuth: only owner"); _;
-    }
-
-    /**
-     * @notice Function modifier to require caller to be authorized
+     * @notice Modifier to require caller to be authorized
      */
     modifier authorized() {
-        require(_authorizations[msg.sender] == true, "OAuth: you're not authorized"); _;
-    }
-
-    /**
-     * @notice Authorize address. Owner only
-     */
-    function authorize(address adr) external onlyOwner {
-        _authorizations[adr] = true;
-        emit Authorize(adr, true);
-    }
-
-    /**
-     * @notice Remove address' authorization. Owner only
-     */
-    function unauthorize(address adr) external onlyOwner {
-        _authorizations[adr] = false;
-        emit Authorize(adr, false);
+        _checkRole(DEFAULT_ADMIN_ROLE, msg.sender); 
+        _;
     }
 
     /**
      * @notice Check if address is owner
+     * @param account Address to check ownership
      */
     function isOwner(address account) public view returns (bool) {
-        return account == _owner;
-    }
-
-    /**
-     * @notice Return address' authorization status
-     */
-    function isAuthorized(address adr) external view returns (bool) {
-        return _authorizations[adr];
+        return hasRole(DEFAULT_ADMIN_ROLE, account);
     }
 
     /**
      * @notice Transfer ownership to new address. Caller must be owner. 
      *         Leaves old owner authorized
      */
-    function transferOwnership(address payable adr) external onlyOwner {
-        _owner = adr;
-        _authorizations[adr] = true;
-        emit OwnershipTransferred(adr);
+    function renounceOwnership(bytes32 role, address account) external authorized() {
+        _revokeRole(role, account);
+        emit OwnershipTransferred(account, address(0));
     }
 }
