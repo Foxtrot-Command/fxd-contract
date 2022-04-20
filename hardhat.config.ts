@@ -11,9 +11,6 @@ import "hardhat-gas-reporter";
 import "hardhat-deploy";
 import "./tasks";
 
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
   solidity: {
     version: "0.8.4",
@@ -28,7 +25,7 @@ module.exports = {
     hardhat: {
       initialBaseFeePerGas: 0
       /* forking: {
-        url: "https://bsc-dataseed.binance.org"
+        url: "https://bsc-dataseed.binance.org" https://speedy-nodes-nyc.moralis.io/aaf5f27c6c7a9ad182a69ccd/bsc/testnet/archive
       } */
     },
     bsc: {
