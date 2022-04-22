@@ -84,7 +84,6 @@ describe("Foxtrot Command (FXD)", function () {
 
   });
 
-
   describe("#~Transactions", async () => {
 
     it("Should transfer to another account without fees", async () => {

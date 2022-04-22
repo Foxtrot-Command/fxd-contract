@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract OAuth is AccessControl {
 
-    address internal _owner;
+    address public _owner;
     mapping (address => bool) internal _authorizations;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);

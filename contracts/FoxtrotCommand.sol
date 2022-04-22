@@ -58,18 +58,15 @@ contract FoxtrotCommand is
      * @param token       Address of the token contract
      * @param receiver    Address of the wallet that will receive the tokens
      * @param amount      Amount of tokens to be transfered
-     * @param reason      Reason for withdrawal of tokens by the authorized person
      */
-    function secureTransfer(
+    function secureWithdraw(
         IERC20 token,
         address receiver,
-        uint256 amount,
-        string memory reason
+        uint256 amount
     ) public authorized() returns (bool) {
         require(token != IERC20(address(this)), "FXD: Cannot withdraw FXD Tokens");
         require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount");
         token.transfer(receiver, amount);
-        emit WithdrawTokensFromMainContract(msg.sender, receiver, amount, reason);
         return true;
     }
 
