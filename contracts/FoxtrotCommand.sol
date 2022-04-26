@@ -9,9 +9,9 @@ import "contracts/financial/Foundation.sol";
 import "contracts/financial/Antibot.sol";
 
 /**
-    @title FXD Token (Foxtrot Command)
-    @author Michael Araque
-    @notice A contract that manages a ERC20 token with initial setup for future Governance
+ *   @title FXD Token (Foxtrot Command)
+ *   @author Michael Araque
+ *   @notice A contract that manages a ERC20 token with initial setup for future Governance
  */
 
 contract FoxtrotCommand is
@@ -24,8 +24,6 @@ contract FoxtrotCommand is
 
     uint256 constant private _TOKEN_SUPPLY = 215e6;
     mapping(address => bool) internal _liquidityPairs;
-
-    event WithdrawTokensFromMainContract(address from, address to, uint256 amount, string reason);
 
     constructor(address multisigAddress) ERC20("Foxtrot Command", "FXD") OAuth(multisigAddress) {
         uint256 supply = _TOKEN_SUPPLY * 10**18; // 215M
@@ -63,7 +61,7 @@ contract FoxtrotCommand is
         IERC20 token,
         address receiver,
         uint256 amount
-    ) public authorized() returns (bool) {
+    ) external authorized() returns (bool) {
         require(token != IERC20(address(this)), "FXD: Cannot withdraw FXD Tokens");
         require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount");
         token.transfer(receiver, amount);

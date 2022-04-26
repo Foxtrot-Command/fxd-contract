@@ -5,12 +5,13 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const deploy: DeployFunction = async function (
   hre: HardhatRuntimeEnvironment,
 ) {
-    const [deployer, multisignAccount] =  (hre as any).customSigners.concat(await hre.ethers.getSigners());
+    const [deployer] =  (hre as any).customSigners.concat(await hre.ethers.getSigners());
+    let multisigWallet = (hre as any).multiSigAddress;
 
     await hre.run("verify:verify", {
-        address: '0xa7b738a6b78f52a6ef839f28f82426634c874a19',
+        address: '0x46Bf7De19E3BDDAa61BfbA571b62c5Bb0f0B33E2',
         contract: "FoxtrotCommand",
-        constructorArguments: [multisignAccount.address]
+        constructorArguments: [multisigWallet]
     });
 
 };

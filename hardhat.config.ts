@@ -13,15 +13,14 @@ import "hardhat-deploy";
 import "./tasks";
 
 const private_keys: string[] = [
-  process.env.PRIVATE_KEY_DEPLOYER as string,
-  process.env.PRIVATE_KEY_MULTISIGN as string
+  process.env.PRIVATE_KEY_DEPLOYER as string
 ];
 
 extendEnvironment((hre: any) => {
   const formatedCustomKeys = private_keys.map((private_key: string) => {
     return new hre.ethers.Wallet(private_key, hre.ethers.provider)
   })
-
+  hre.multiSigAddress = '0x52b14E50D0490958B8ce34E14d27ceAA05391CCD';
   hre.customSigners = formatedCustomKeys;
 
 });

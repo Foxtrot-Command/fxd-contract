@@ -5,17 +5,18 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract OAuth is AccessControl {
 
-    address public _owner;
+    address public owner;
     mapping (address => bool) internal _authorizations;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     constructor(address multisigAddress) {
          _grantRole(DEFAULT_ADMIN_ROLE, multisigAddress);
+         owner = multisigAddress;
     }
 
     /**
-     * @notice Modifier to require caller to be authorized
+     * @notice A modifier that checks if the caller is authorized to call the function
      */
     modifier authorized() {
         _checkRole(DEFAULT_ADMIN_ROLE, msg.sender); 
@@ -23,26 +24,21 @@ contract OAuth is AccessControl {
     }
 
     /**
-     * @notice Method to allow authorized role to grand role to an address
-     */
-    function setRoleTo(bytes32 _role, address _to) external authorized() {
-        _grantRole(_role, _to);
-    }
-
-    /**
      * @notice Check if address is owner
      * @param account Address to check ownership
      */
-    function isOwner(address account) public view returns (bool) {
+    function isOwner(address account) external view returns (bool) {
         return hasRole(DEFAULT_ADMIN_ROLE, account);
     }
 
     /**
      * @notice Transfer ownership to new address. Caller must be owner. 
      *         Leaves old owner authorized
+     * @param account New owner of the contract
      */
-    function renounceOwnership(bytes32 role, address account) external authorized() {
-        _revokeRole(role, account);
+    function renounceOwnership(address account) external authorized() {
+        _revokeRole(DEFAULT_ADMIN_ROLE, account);
+        owner = address(0);
         emit OwnershipTransferred(account, address(0));
     }
 }

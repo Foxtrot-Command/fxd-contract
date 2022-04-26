@@ -10,17 +10,17 @@ async function main() {
   let deployer: SignerWithAddress;
 
   [deployer] = (hre as any).customSigners.concat(await hre.ethers.getSigners());
-  let gnosisSafeAddress = '0x8234CdBaA9F5c23bE1bd966C673A3D9f4096AcC7';
+  let multisigWallet = (hre as any).multiSigAddress;
 
   const FoxtrotCommandToken = await hre.ethers.getContractFactory("FoxtrotCommand");
-  const foxtrotToken = await FoxtrotCommandToken.deploy(gnosisSafeAddress)
+  const foxtrotToken = await FoxtrotCommandToken.deploy(multisigWallet)
   let contract = await foxtrotToken.deployed();
   console.log("Token deployed to:", foxtrotToken.address);
 
   await hre.run("verify:verify", {
     address: contract,
     contract: "FoxtrotCommand",
-    constructorArguments: [gnosisSafeAddress]
+    constructorArguments: [multisigWallet]
   });
 }
 

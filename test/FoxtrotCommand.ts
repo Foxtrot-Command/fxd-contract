@@ -10,6 +10,11 @@ const BigNumber = (value: number) => ethers.BigNumber.from(value);
 const parseEther = (value: number) => ethers.utils.parseEther(String(value));
 const formatEther = (value: number) => Number(ethers.utils.formatEther(String(value)));
 
+const AdvanceTime = async (time: number) => {
+  await ethers.provider.send('evm_increaseTime', [time]);
+  await ethers.provider.send('evm_mine', []);
+}
+
 describe("Foxtrot Command (FXD)", function () {
 
   let foxtrotToken: Contract,
@@ -141,12 +146,11 @@ describe("Foxtrot Command (FXD)", function () {
 
     })
 
-
   });
 
   describe("#~OAuth", async () => {
 
-    it("MasterAccount should be the owner", async () => {
+    it("Multisig address should be the owner", async () => {
       let owner = await foxtrotToken.isOwner(multisigWallet.address);
       expect(owner).to.be.true;
     });
@@ -197,7 +201,11 @@ describe("Foxtrot Command (FXD)", function () {
       it("Should not be able to transact two times at time", async () => {
         await expect(foxtrotToken.connect(userAccount2).transfer(liquidityMock.address, parseEther(3)))
           .to.be.revertedWith('FXDGuard: wait between two tx');
-
+      });
+      
+      it("Should be able to transact with advanced time", async () => {
+        await AdvanceTime(60);
+        await foxtrotToken.connect(userAccount2).transfer(liquidityMock.address, parseEther(3));
       });
     })
   })
