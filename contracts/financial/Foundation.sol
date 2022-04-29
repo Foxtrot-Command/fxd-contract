@@ -71,7 +71,7 @@ abstract contract Foundation is OAuth {
      * @param addr Address of wallted to update
      * @param state Set true/false
      */
-    function setFoundationExempt(address addr, bool state) external authorized() {
+    function setFoundationExempt(address addr, bool state) public authorized() {
         _isFoundationExempt[addr] = state;
     }
 

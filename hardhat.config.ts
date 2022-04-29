@@ -25,7 +25,13 @@ extendEnvironment((hre: any) => {
 
 });
 
-const config: HardhatUserConfig = {
+interface FullHardhatUserConfig extends HardhatUserConfig {
+  etherscan: {
+    apiKey: any;
+  }
+}
+
+const config: FullHardhatUserConfig = {
   solidity: {
     version: "0.8.4",
     settings: {
@@ -43,10 +49,10 @@ const config: HardhatUserConfig = {
       } */
     },
     bsc: {
-      //accounts: process.env.BSC_KEY !== undefined ? [process.env.BSC_KEY] : [],
+      accounts: process.env.BSC_DEPLOYER_KEY !== undefined ? [process.env.BSC_DEPLOYER_KEY] : [],
       url: `https://bsc-dataseed1.binance.org`,
     },
-    bscTestnet : {
+    bcsTestnet : {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545`,
       accounts: [private_keys[0]]
     },
@@ -65,7 +71,11 @@ const config: HardhatUserConfig = {
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: /* {
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      rinkeby: process.env.ETHERSCAN_API_KEY, */
+      process.env.BSCSCAN_API_KEY
+
   },
 };
 

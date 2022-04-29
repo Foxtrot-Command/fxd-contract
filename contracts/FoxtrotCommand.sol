@@ -25,12 +25,15 @@ contract FoxtrotCommand is
     uint256 constant private _TOKEN_SUPPLY = 215e6;
     mapping(address => bool) internal _liquidityPairs;
 
-    constructor(address multisigAddress) ERC20("Foxtrot Command", "FXD") OAuth(multisigAddress) {
+    event SecureTransferTokenFromContract(address from, address to, uint256 amount, string reason);
+
+    constructor() ERC20("Foxtrot Command", "FXD") {
         uint256 supply = _TOKEN_SUPPLY * 10**18; // 215M
 
         Antibot.isAntibotEnabled = true;
         Foundation.isFoundationEnabled = true;
-        _mint(multisigAddress, supply);
+
+        _mint(address(this), supply);
     }
 
     /**
@@ -56,15 +59,37 @@ contract FoxtrotCommand is
      * @param token       Address of the token contract
      * @param receiver    Address of the wallet that will receive the tokens
      * @param amount      Amount of tokens to be transfered
+     * @param reason      Reason for withdrawal of tokens by the multisig
      */
-    function secureWithdraw(
+    function secureTransfer(
         IERC20 token,
         address receiver,
-        uint256 amount
-    ) external authorized() returns (bool) {
-        require(token != IERC20(address(this)), "FXD: Cannot withdraw FXD Tokens");
+        uint256 amount,
+        string memory reason
+    ) public authorized() returns (bool) {
         require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount");
         token.transfer(receiver, amount);
+        emit SecureTransferTokenFromContract(msg.sender, receiver, amount, reason);
+        return true;
+    }
+
+    /**
+     * @notice This methods allows secure transfer from contract to addresses/contracts
+     * @param token       Addresses of the token contract
+     * @param receiver    Addresses of the wallet that will receive the tokens
+     * @param amount      Amounts of tokens to be transfered
+     * @param reason      Reasons for withdrawal of tokens by the multisig
+     */
+    function secureBatchTransfer(
+        IERC20[] calldata token,
+        address[] calldata receiver,
+        uint256[] calldata amount,
+        string[] memory reason
+    ) external authorized() returns (bool) {
+        require(token.length == receiver.length && token.length == amount.length && token.length == reason.length, "FXD: data length mismatch");
+        for (uint i = 0; i < token.length; i++) {
+            secureTransfer(token[i], receiver[i], amount[i], reason[i]);
+        }
         return true;
     }
 

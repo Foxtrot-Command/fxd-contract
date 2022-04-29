@@ -8,6 +8,7 @@ abstract contract Antibot is OAuth {
     bool public isAntibotEnabled;
     uint256 public cooldownTimerInterval = 60;
     uint256 constant internal _MAX_COOLDOWN_INTERVAL = 120;
+    uint256 internal _cooldownNonGraceTracker;
 
     mapping (address => uint) internal _cooldownTimer;
     mapping (address => bool) internal _isCooldownExempt;
@@ -70,7 +71,7 @@ abstract contract Antibot is OAuth {
      * @param addr Address of wallted to update
      * @param state Set true/false
      */
-    function setCooldownExempt(address addr, bool state) external authorized() {
+    function setCooldownExempt(address addr, bool state) public authorized() {
         _isCooldownExempt[addr] = state;
     }
 }
