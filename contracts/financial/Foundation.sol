@@ -41,7 +41,7 @@ abstract contract Foundation is OAuth {
      * @param newFoundationAddress Address of the new wallet that are going to handle the received tax
 	 */
 	function setFoundationAddress(address newFoundationAddress) external authorized() {
-        require(newFoundationAddress != foundationAddress, "FXD: Address is the same");
+        require(newFoundationAddress != foundationAddress, "FXD: Address is the same.");
 		foundationAddress = newFoundationAddress;
         emit UpdateFoundationAddres(foundationAddress);
 	}
@@ -51,8 +51,8 @@ abstract contract Foundation is OAuth {
      * @param newTaxValue Percentage in basis point
      */
     function setFoundationFee(uint256 newTaxValue) external authorized() {
-        require(newTaxValue <= _MAX_TAX_RATE, "FXD: tax amount exceed limit");
-        require(foundationTax != newTaxValue, "FXD: New tax is the same");
+        require(newTaxValue <= _MAX_TAX_RATE, "FXD: tax amount exceed limit.");
+        require(foundationTax != newTaxValue, "FXD: New tax is the same.");
         foundationTax = newTaxValue;
 
         emit UpdateFoundationTax(newTaxValue);

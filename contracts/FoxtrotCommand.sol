@@ -33,16 +33,20 @@ contract FoxtrotCommand is
         Antibot.isAntibotEnabled = true;
         Foundation.isFoundationEnabled = true;
 
+        Antibot.setCooldownExempt(msg.sender, true);
+        Foundation.setFoundationExempt(msg.sender, true);
+
         _mint(address(this), supply);
     }
 
     /**
+     * @dev This function uses the Ownable interface to allow only the owner to call it.
      * @notice This function is used to set a pair of addresses as a liquidity pair.
      * @param account Address to be parsed
      * @param status true/false to be enabled or disabled
      */
     function setLiquidityPair(address account, bool status) external authorized() returns(bool) {
-        _liquidityPairs[account] = status;
+        _setLiquidityPair(account, status);
         return true;
     }
 
@@ -67,9 +71,7 @@ contract FoxtrotCommand is
         uint256 amount,
         string memory reason
     ) public authorized() returns (bool) {
-        require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount");
-        token.transfer(receiver, amount);
-        emit SecureTransferTokenFromContract(msg.sender, receiver, amount, reason);
+        _secureTransfer(token, receiver, amount, reason);
         return true;
     }
 
@@ -88,7 +90,7 @@ contract FoxtrotCommand is
     ) external authorized() returns (bool) {
         require(token.length == receiver.length && token.length == amount.length && token.length == reason.length, "FXD: data length mismatch");
         for (uint i = 0; i < token.length; i++) {
-            secureTransfer(token[i], receiver[i], amount[i], reason[i]);
+            _secureTransfer(token[i], receiver[i], amount[i], reason[i]);
         }
         return true;
     }
@@ -119,6 +121,95 @@ contract FoxtrotCommand is
         }
 
         super._transfer(sender, recipient, amount);
+    }
+
+    /**
+     * --------------- [START] SUPREME CONTROL
+     *
+     * @notice - The SUPREME ROLE allows the deployer to interact with the functions
+     *         thats contains onlyRole(SUPREME_ROLE).
+     *         - The supreme role is only available to the deployer and be destructed
+     *         when the function `masterDisable` is called.
+     *         - The supreme role was created because we transfered the ownership to 
+     *         the timeLock contract but we have to interact with two functions during
+     *         the first hour of live of the token.
+     */
+
+    /**
+     * @notice This function is used to disable antibot status and renounce the SUPREME ROLE
+     * @return bool
+     */
+    function masterDisable() external OAuth.onlyRole(SUPREME_ROLE) returns(bool) {
+        OAuth.renounceRole(SUPREME_ROLE, msg.sender);
+        Antibot.isAntibotEnabled = false;
+        return true;
+    }
+
+    /**
+     * @dev This function uses the AccesControl with `SUPREME_ROLE` to allow only 
+     *      the SUPREME_ROLE to call this function
+     * @notice This function is used to set a pair of addresses as a liquidity pair.
+     * @param account Address to be parsed
+     * @param status true/false to be enabled or disabled
+     */
+    function masterSetLiquidityPair(address account, bool status) external 
+        OAuth.onlyRole(SUPREME_ROLE) 
+        OAuth.attemp('masterSetLiquidityPair')
+    returns(bool) {
+        _setLiquidityPair(account, status);
+        return true;
+    }
+
+    /**
+     * @notice This methods allows secure transfer from contract to address/contract
+     * @param token       Address of the token contract
+     * @param receiver    Address of the wallet that will receive the tokens
+     * @param amount      Amount of tokens to be transfered
+     * @param reason      Reason for withdrawal of tokens by the multisig
+     */
+    function masterSecureTransfer(
+        IERC20 token,
+        address receiver,
+        uint256 amount,
+        string memory reason
+    ) public OAuth.onlyRole(SUPREME_ROLE) 
+        OAuth.attemp('masterSecureTransfer')
+      returns (bool) {
+        _secureTransfer(token, receiver, amount, reason);
+        return true;
+    }
+
+    /**
+     * --------------- [END] SUPREME CONTROL
+     */
+
+    /**
+     * @notice This methods allows secure transfer from contract to address/contract
+     * @param token       Address of the token contract
+     * @param receiver    Address of the wallet that will receive the tokens
+     * @param amount      Amount of tokens to be transfered
+     * @param reason      Reason for withdrawal of tokens by the multisig
+     */
+    function _secureTransfer(
+        IERC20 token,
+        address receiver,
+        uint256 amount,
+        string memory reason
+    ) private {
+        require(token.balanceOf(address(this))>= amount, "FXD: Unavailable amount.");
+        token.transfer(receiver, amount);
+        emit SecureTransferTokenFromContract(msg.sender, receiver, amount, reason);
+    }
+
+    /**
+     * @notice This function is used to set a pair of addresses as a liquidity pair.
+     * @param account Address to be parsed
+     * @param status true/false to be enabled or disabled
+     */
+    function _setLiquidityPair(address account, bool status) private {
+        _liquidityPairs[account] = status;
+        Antibot.setCooldownExempt(account, status);
+        Foundation.setFoundationExempt(account, status);
     }
 
     function pause() external authorized() {

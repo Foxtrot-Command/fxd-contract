@@ -43,7 +43,8 @@ const config: FullHardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      initialBaseFeePerGas: 0
+      initialBaseFeePerGas: 0,
+      gasPrice: 5000000000
       /* forking: {
         url: "https://bsc-dataseed.binance.org"
       } */
