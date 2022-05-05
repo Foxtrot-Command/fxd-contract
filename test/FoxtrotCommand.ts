@@ -37,7 +37,7 @@ describe("Foxtrot Command (FXD)", function () {
     const FoxtrotCommandToken = await ethers.getContractFactory("FoxtrotCommand");
     const TimeLockController = await ethers.getContractFactory("TimelockController");
 
-    foxtrotToken = await FoxtrotCommandToken.deploy();
+    foxtrotToken = await FoxtrotCommandToken.deploy(multisigWallet.address);
     timeLockController = await TimeLockController.deploy(172800, [multisigWallet.address], [multisigWallet.address]);
     busdToken = await BusdToken.deploy();
 

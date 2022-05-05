@@ -2,7 +2,6 @@
 pragma solidity 0.8.4;
 
 import "contracts/security/OAuth.sol";
-import "hardhat/console.sol";
 
 abstract contract Antibot is OAuth {
 
@@ -50,7 +49,7 @@ abstract contract Antibot is OAuth {
     /**
      * @notice This function is used to enable/disable the antibot system
      */
-    function setAntibotStatus() external authorized() {
+    function setAntibotStatus() external authorized {
         isAntibotEnabled = !isAntibotEnabled;
     }
     
@@ -58,7 +57,7 @@ abstract contract Antibot is OAuth {
      * @notice This method allows to change the wait time of the antibot system
      * @param newWaitTime the input should be in seconds
      */
-    function setAntibotWaitTime(uint256 newWaitTime) external authorized() {
+    function setAntibotWaitTime(uint256 newWaitTime) external authorized {
         require(newWaitTime <= _MAX_COOLDOWN_INTERVAL, "FXDGuard: limit time exceed.");
         cooldownTimerInterval = newWaitTime;
     }
@@ -76,7 +75,7 @@ abstract contract Antibot is OAuth {
      * @param addr Address of wallted to update
      * @param state Set true/false
      */
-    function setCooldownExempt(address addr, bool state) public authorized() {
+    function setCooldownExempt(address addr, bool state) public authorized {
         _isCooldownExempt[addr] = state;
     }
 }

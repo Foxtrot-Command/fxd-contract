@@ -53,7 +53,7 @@ const config: FullHardhatUserConfig = {
       accounts: process.env.BSC_DEPLOYER_KEY !== undefined ? [process.env.BSC_DEPLOYER_KEY] : [],
       url: `https://bsc-dataseed1.binance.org`,
     },
-    bcsTestnet : {
+    bscTestnet : {
       url: `https://data-seed-prebsc-1-s1.binance.org:8545`,
       accounts: [private_keys[0]]
     },

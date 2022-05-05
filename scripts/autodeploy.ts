@@ -15,14 +15,14 @@ async function main() {
   // Deploy FXD contract
 
   const FoxtrotCommandToken = await hre.ethers.getContractFactory("FoxtrotCommand");
-  const foxtrotToken = await FoxtrotCommandToken.deploy()
+  const foxtrotToken = await FoxtrotCommandToken.deploy(multisigWallet)
   await foxtrotToken.deployTransaction.wait(5);
 
   try {
     await hre.run("verify:verify", {
       address: foxtrotToken.address,
       contract: "contracts/FoxtrotCommand.sol:FoxtrotCommand",
-      constructorArguments: []
+      constructorArguments: [multisigWallet]
     });
   } catch (err: any) {
     if (err.message.includes("Reason: Already Verified")) {
@@ -55,24 +55,17 @@ async function main() {
   var tx = await foxtrotToken.setCooldownExempt(timeLockController.address, true);
   await tx.wait()
 
-  await foxtrotToken.setFoundationExempt(multisigWallet, true);
-  var tx = await foxtrotToken.setCooldownExempt(multisigWallet, true);
-  await tx.wait()
-
-  await foxtrotToken.setFoundationExempt(foxtrotToken.address, true);
-  var tx = await foxtrotToken.setCooldownExempt(foxtrotToken.address, true);
-  await tx.wait()
-
   // Transfer Ownership to the TimeLockController
 
-  await foxtrotToken.transferOwnership(timeLockController.address);
+  //await foxtrotToken.transferOwnership(timeLockController.address);
 
   // Renounce timeLock ownership role
-  let admin_role = await timeLockController.TIMELOCK_ADMIN_ROLE();
-  await timeLockController.renounceRole(admin_role, deployer.address);
+  //let admin_role = await timeLockController.TIMELOCK_ADMIN_ROLE();
+  //await timeLockController.renounceRole(admin_role, deployer.address);
 
   console.log("FXD token address:", foxtrotToken.address);
   console.log("Timelock address:", timeLockController.address);
+  console.log("MultiSig Address:", multisigWallet);
 }
 
 main().catch((error) => {

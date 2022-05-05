@@ -24,7 +24,7 @@ abstract contract Foundation is OAuth {
     /**
      * @notice This function is used to enable/disable the foundation fee
      */
-    function setFoundationStatus() external authorized() {
+    function setFoundationStatus() external authorized {
         isFoundationEnabled = !isFoundationEnabled;
     }
 
@@ -40,7 +40,7 @@ abstract contract Foundation is OAuth {
 	 * @dev Changes the foundation address `foundationAddress` to `newFoundationAddress`.
      * @param newFoundationAddress Address of the new wallet that are going to handle the received tax
 	 */
-	function setFoundationAddress(address newFoundationAddress) external authorized() {
+	function setFoundationAddress(address newFoundationAddress) external authorized {
         require(newFoundationAddress != foundationAddress, "FXD: Address is the same.");
 		foundationAddress = newFoundationAddress;
         emit UpdateFoundationAddres(foundationAddress);
@@ -50,7 +50,7 @@ abstract contract Foundation is OAuth {
      * @dev The new tax value must be on basis point (100 = 1%)
      * @param newTaxValue Percentage in basis point
      */
-    function setFoundationFee(uint256 newTaxValue) external authorized() {
+    function setFoundationFee(uint256 newTaxValue) external authorized {
         require(newTaxValue <= _MAX_TAX_RATE, "FXD: tax amount exceed limit.");
         require(foundationTax != newTaxValue, "FXD: New tax is the same.");
         foundationTax = newTaxValue;
@@ -71,7 +71,7 @@ abstract contract Foundation is OAuth {
      * @param addr Address of wallted to update
      * @param state Set true/false
      */
-    function setFoundationExempt(address addr, bool state) public authorized() {
+    function setFoundationExempt(address addr, bool state) public authorized {
         _isFoundationExempt[addr] = state;
     }
 
